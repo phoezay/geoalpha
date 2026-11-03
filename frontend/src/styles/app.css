@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Dark mode follows the `.dark` class (set before paint in index.html, toggled by ThemeToggle). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens (contracts/ui-states.md). Utilities like bg-surface / text-muted / ring-accent
+   resolve to these variables, so a theme switch is a single class change. */
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-bg: var(--ga-bg);
+  --color-surface: var(--ga-surface);
+  --color-surface-2: var(--ga-surface-2);
+  --color-border: var(--ga-border);
+  --color-fg: var(--ga-fg);
+  --color-muted: var(--ga-muted);
+  --color-accent: var(--ga-accent);
+  --color-accent-fg: var(--ga-accent-fg);
+  --color-accent-soft: var(--ga-accent-soft);
+  --color-positive: var(--ga-positive);
+  --color-positive-soft: var(--ga-positive-soft);
+  --color-negative: var(--ga-negative);
+  --color-negative-soft: var(--ga-negative-soft);
+  --color-warning: var(--ga-warning);
+  --color-warning-soft: var(--ga-warning-soft);
+  --color-skeleton: var(--ga-skeleton);
+}
+
+:root {
+  --ga-bg: var(--color-neutral-50);
+  --ga-surface: var(--color-white);
+  --ga-surface-2: var(--color-neutral-100);
+  --ga-border: var(--color-neutral-200);
+  --ga-fg: var(--color-neutral-900);
+  --ga-muted: var(--color-neutral-600);
+  --ga-accent: var(--color-indigo-600);
+  --ga-accent-fg: var(--color-white);
+  --ga-accent-soft: var(--color-indigo-50);
+  --ga-positive: var(--color-emerald-700);
+  --ga-positive-soft: var(--color-emerald-50);
+  --ga-negative: var(--color-rose-700);
+  --ga-negative-soft: var(--color-rose-50);
+  --ga-warning: var(--color-amber-700);
+  --ga-warning-soft: var(--color-amber-50);
+  --ga-skeleton: var(--color-neutral-200);
+  color-scheme: light;
+}
+
+.dark {
+  --ga-bg: var(--color-neutral-950);
+  --ga-surface: var(--color-neutral-900);
+  --ga-surface-2: var(--color-neutral-800);
+  --ga-border: var(--color-neutral-800);
+  --ga-fg: var(--color-neutral-100);
+  --ga-muted: var(--color-neutral-400);
+  --ga-accent: var(--color-indigo-300);
+  --ga-accent-fg: var(--color-neutral-950);
+  --ga-accent-soft: color-mix(in oklab, var(--color-indigo-400) 14%, transparent);
+  --ga-positive: var(--color-emerald-400);
+  --ga-positive-soft: color-mix(in oklab, var(--color-emerald-400) 14%, transparent);
+  --ga-negative: var(--color-rose-300);
+  --ga-negative-soft: color-mix(in oklab, var(--color-rose-400) 14%, transparent);
+  --ga-warning: var(--color-amber-400);
+  --ga-warning-soft: color-mix(in oklab, var(--color-amber-400) 14%, transparent);
+  --ga-skeleton: var(--color-neutral-800);
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-fg font-sans antialiased text-sm;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible {
+    outline: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes ga-flash {
+  0% { box-shadow: 0 0 0 0 var(--ga-accent); }
+  100% { box-shadow: 0 0 0 6px transparent; }
+}

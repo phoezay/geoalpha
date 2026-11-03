@@ -1,0 +1,341 @@
+openapi: 3.1.0
+info:
+  title: GeoAlpha API
+  version: 0.1.0
+  description: >
+    Local research API for GeoAlpha. Research output only, not financial advice.
+    No authentication in the MVP (single-user local tool, see spec Assumptions).
+    The generated OpenAPI document MUST match this file (contract test).
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Liveness plus configuration readiness (used to show config errors before a run)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+
+  /api/tickers/validate:
+    get:
+      operationId: validateTicker
+      summary: Inline ticker validation for the start form (FR-002)
+      parameters:
+        - { name: ticker, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Validation result (always 200; check `valid`)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TickerValidation" }
+
+  /api/runs:
+    post:
+      operationId: createRun
+      summary: Start an analysis run (FR-001). Returns immediately with all stages pending.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RunCreate" }
+      responses:
+        "201":
+          description: Run created and queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RunDetail" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "503": { $ref: "#/components/responses/Problem" }
+    get:
+      operationId: listRuns
+      summary: Run history, newest first (FR-018)
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+        - { name: cursor, in: query, schema: { type: string }, description: "ULID of the last item from the previous page" }
+      responses:
+        "200":
+          description: Page of runs
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RunPage" }
+
+  /api/runs/{runId}:
+    parameters:
+      - { name: runId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: getRun
+      summary: Full run snapshot (stages, signals, forecast, decision). Used on reload and from history (FR-019).
+      responses:
+        "200":
+          description: Run detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RunDetail" }
+        "404": { $ref: "#/components/responses/Problem" }
+
+  /api/runs/{runId}/events:
+    parameters:
+      - { name: runId, in: path, required: true, schema: { type: string } }
+      - { name: Last-Event-ID, in: header, required: false, schema: { type: integer } }
+    get:
+      operationId: streamRunEvents
+      summary: >
+        Server-Sent Events stream of run progress. Each event's `id` is RunEvent.seq, `event` is
+        the type, and `data` is JSON matching sse-events.schema.json. Replays events after
+        Last-Event-ID, then streams live, and closes after `run.finished`.
+      responses:
+        "200":
+          description: text/event-stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+        "404": { $ref: "#/components/responses/Problem" }
+
+  /api/runs/{runId}/export:
+    parameters:
+      - { name: runId, in: path, required: true, schema: { type: string } }
+      - { name: format, in: query, required: true, schema: { type: string, enum: [md, html] } }
+    get:
+      operationId: exportRun
+      summary: Download a completed run as Markdown or self-contained HTML (FR-025)
+      responses:
+        "200":
+          description: File download (Content-Disposition attachment; filename "{ticker}_{analysis_date}_{run_id}.{md|html}")
+          content:
+            text/markdown: { schema: { type: string } }
+            text/html: { schema: { type: string } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+
+  /api/runs/{runId}/retry:
+    parameters:
+      - { name: runId, in: path, required: true, schema: { type: string } }
+    post:
+      operationId: retryRun
+      summary: >
+        For failed/interrupted runs, resume from checkpoint (only failed and later stages re-run).
+        For completed runs, `mode=fresh` creates a new linked run (retry_of). Research R3.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode: { type: string, enum: [resume, fresh], default: resume }
+      responses:
+        "202":
+          description: Retry accepted. Returns the run that will execute (same ID for resume, new ID for fresh).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RunDetail" }
+        "409": { $ref: "#/components/responses/Problem" }
+
+components:
+  responses:
+    Problem:
+      description: RFC 9457 problem details
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  schemas:
+    Problem:
+      type: object
+      required: [title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        field_errors:
+          type: object
+          additionalProperties: { type: string }
+
+    Health:
+      type: object
+      required: [ok, llm_configured, geo_provider, forecast_model_ready]
+      properties:
+        ok: { type: boolean }
+        llm_configured: { type: boolean }
+        llm_provider: { type: string }
+        geo_provider: { type: string, enum: [worldmonitor, snapshot, fixture] }
+        geo_configured: { type: boolean }
+        forecast_model_ready: { type: boolean }
+        problems: { type: array, items: { type: string } }
+
+    TickerValidation:
+      type: object
+      required: [ticker, valid]
+      properties:
+        ticker: { type: string }
+        valid: { type: boolean }
+        name: { type: string }
+        exchange: { type: string }
+        reason: { type: string, description: "Present when valid=false" }
+
+    RunCreate:
+      type: object
+      required: [ticker]
+      properties:
+        ticker: { type: string, pattern: "^[A-Za-z][A-Za-z0-9.\\-]{0,9}$" }
+        date: { type: string, format: date, description: "Defaults to most recent completed NYSE session" }
+
+    RunStatus:
+      type: string
+      enum: [queued, running, completed, failed, interrupted]
+
+    StageKey:
+      type: string
+      enum: [geo, forecast, market, sentiment, news, fundamentals, research_debate, trader, risk_debate, decision]
+
+    StageStatus:
+      type: string
+      enum: [pending, running, done, failed, unavailable, skipped]
+
+    Stage:
+      type: object
+      required: [key, label, order, critical, status, attempts]
+      properties:
+        key: { $ref: "#/components/schemas/StageKey" }
+        label: { type: string }
+        order: { type: integer }
+        critical: { type: boolean }
+        status: { $ref: "#/components/schemas/StageStatus" }
+        started_at: { type: [string, "null"], format: date-time }
+        finished_at: { type: [string, "null"], format: date-time }
+        attempts: { type: integer }
+        report_md: { type: [string, "null"] }
+        payload: { type: [object, "null"] }
+        error: { type: [string, "null"] }
+
+    GeoSignal:
+      type: object
+      required: [id, rank, region, category, severity, impact_direction, headline, rationale, valid_at, source_label]
+      properties:
+        id: { type: string }
+        rank: { type: integer, minimum: 1, maximum: 10 }
+        region: { type: string }
+        category:
+          type: string
+          enum: [conflict, instability, sanctions, supply_route, commodity_shock, energy, cyber, disaster, policy, other]
+        severity: { type: integer, minimum: 1, maximum: 5 }
+        impact_direction: { type: string, enum: [positive, negative, mixed, uncertain] }
+        headline: { type: string, maxLength: 140 }
+        rationale: { type: string }
+        valid_at: { type: string, format: date-time }
+        source_label: { type: string }
+        source_url: { type: [string, "null"], format: uri }
+
+    GeoSummary:
+      type: object
+      required: [materiality, signals]
+      properties:
+        materiality: { type: string, enum: [material, immaterial, unavailable] }
+        unavailable_reason: { type: [string, "null"] }
+        exposure:
+          type: [object, "null"]
+          properties:
+            countries:
+              type: array
+              items:
+                type: object
+                properties:
+                  iso2: { type: string }
+                  weight: { type: number }
+                  reason: { type: string }
+            commodities: { type: array, items: { type: string } }
+            chokepoints: { type: array, items: { type: string } }
+        signals:
+          type: array
+          items: { $ref: "#/components/schemas/GeoSignal" }
+
+    Bar:
+      type: object
+      required: [date, open, high, low, close]
+      properties:
+        date: { type: string, format: date }
+        open: { type: number }
+        high: { type: number }
+        low: { type: number }
+        close: { type: number }
+        volume: { type: [number, "null"] }
+
+    ForecastPoint:
+      type: object
+      required: [date, p10, p50, p90]
+      properties:
+        date: { type: string, format: date }
+        p10: { type: number }
+        p50: { type: number }
+        p90: { type: number }
+
+    PriceForecast:
+      type: object
+      required: [model, history, path, horizon, sample_count, last_close, expected_move_pct, range_low, range_high]
+      properties:
+        model: { type: string }
+        history: { type: array, items: { $ref: "#/components/schemas/Bar" } }
+        path: { type: array, items: { $ref: "#/components/schemas/ForecastPoint" } }
+        horizon: { type: integer }
+        sample_count: { type: integer }
+        last_close: { type: number }
+        expected_move_pct: { type: number }
+        range_low: { type: number }
+        range_high: { type: number }
+
+    Decision:
+      type: object
+      required: [rating, confidence, summary, rationale_md, geo_statement, cited_signal_ids, forecast_alignment, missing_inputs, disclaimer]
+      properties:
+        rating: { type: string, enum: [Buy, Overweight, Hold, Underweight, Sell] }
+        confidence: { type: string, enum: [low, medium, high] }
+        summary: { type: string }
+        rationale_md: { type: string }
+        geo_statement: { type: string, enum: [cites, none_material, unavailable] }
+        cited_signal_ids: { type: array, items: { type: string } }
+        forecast_alignment: { type: string, enum: [supports, contradicts, neutral, unavailable] }
+        missing_inputs: { type: array, items: { type: string, enum: [geo, forecast] } }
+        disclaimer: { type: string }
+
+    RunSummary:
+      type: object
+      required: [id, ticker, requested_date, analysis_date, status, created_at]
+      properties:
+        id: { type: string }
+        ticker: { type: string }
+        requested_date: { type: string, format: date }
+        analysis_date: { type: string, format: date }
+        status: { $ref: "#/components/schemas/RunStatus" }
+        rating: { type: [string, "null"], enum: [Buy, Overweight, Hold, Underweight, Sell, null] }
+        created_at: { type: string, format: date-time }
+        finished_at: { type: [string, "null"], format: date-time }
+        retry_of: { type: [string, "null"] }
+
+    RunPage:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/RunSummary" } }
+        next_cursor: { type: [string, "null"] }
+
+    RunDetail:
+      allOf:
+        - $ref: "#/components/schemas/RunSummary"
+        - type: object
+          required: [stages, settings, llm_provider, deep_model, quick_model, missing_inputs, last_event_seq]
+          properties:
+            stages: { type: array, items: { $ref: "#/components/schemas/Stage" } }
+            settings: { type: object }
+            llm_provider: { type: string }
+            deep_model: { type: string }
+            quick_model: { type: string }
+            missing_inputs: { type: array, items: { type: string } }
+            error: { type: [string, "null"] }
+            geo: { oneOf: [{ $ref: "#/components/schemas/GeoSummary" }, { type: "null" }] }
+            forecast: { oneOf: [{ $ref: "#/components/schemas/PriceForecast" }, { type: "null" }] }
+            decision: { oneOf: [{ $ref: "#/components/schemas/Decision" }, { type: "null" }] }
+            last_event_seq: { type: integer, description: "Client passes this as Last-Event-ID when subscribing to events" }

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://geoalpha.local/contracts/sse-events.schema.json",
+  "title": "GeoAlpha run event (SSE data payload)",
+  "description": "Payload of each SSE message on GET /api/runs/{runId}/events. The SSE `event` field equals `type`, and the SSE `id` equals `seq`. Types reference OpenAPI components in openapi.yaml.",
+  "type": "object",
+  "required": ["seq", "run_id", "type", "at", "data"],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1 },
+    "run_id": { "type": "string" },
+    "at": { "type": "string", "format": "date-time" },
+    "type": {
+      "enum": [
+        "run.started",
+        "stage.started",
+        "stage.completed",
+        "stage.failed",
+        "stage.unavailable",
+        "geo.ready",
+        "forecast.ready",
+        "decision.ready",
+        "run.finished",
+        "heartbeat"
+      ]
+    },
+    "data": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "enum": ["stage.started"] } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["stage", "attempt"],
+            "properties": {
+              "stage": { "$ref": "openapi.yaml#/components/schemas/StageKey" },
+              "attempt": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "enum": ["stage.completed"] } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["stage"],
+            "properties": {
+              "stage": { "$ref": "openapi.yaml#/components/schemas/StageKey" },
+              "report_md": { "type": ["string", "null"] },
+              "payload": { "type": ["object", "null"] },
+              "status": { "enum": ["done", "skipped"], "description": "Terminal status; absent means done" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "enum": ["stage.failed", "stage.unavailable"] } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["stage", "message", "retryable"],
+            "properties": {
+              "stage": { "$ref": "openapi.yaml#/components/schemas/StageKey" },
+              "message": { "type": "string", "description": "User-facing; no stack traces" },
+              "retryable": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "geo.ready" } } },
+      "then": { "properties": { "data": { "$ref": "openapi.yaml#/components/schemas/GeoSummary" } } }
+    },
+    {
+      "if": { "properties": { "type": { "const": "forecast.ready" } } },
+      "then": { "properties": { "data": { "$ref": "openapi.yaml#/components/schemas/PriceForecast" } } }
+    },
+    {
+      "if": { "properties": { "type": { "const": "decision.ready" } } },
+      "then": { "properties": { "data": { "$ref": "openapi.yaml#/components/schemas/Decision" } } }
+    },
+    {
+      "if": { "properties": { "type": { "const": "run.finished" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": { "enum": ["completed", "failed", "interrupted"] },
+              "error": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

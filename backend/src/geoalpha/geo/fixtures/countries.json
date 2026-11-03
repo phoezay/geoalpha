@@ -1,0 +1,72 @@
+{
+  "US": {
+    "risk": {"country_code": "US", "cii_score": 31, "band": "low", "trend_24h": "flat"},
+    "conflicts": [],
+    "sanctions": [],
+    "maritime": {"country_code": "US", "port_congestion": "normal", "disruptions": []}
+  },
+  "SA": {
+    "risk": {"country_code": "SA", "cii_score": 48, "band": "elevated", "trend_24h": "up"},
+    "conflicts": [
+      {"id": "sa-1", "title": "Drone strike reported near Eastern Province processing facility", "fatalities": 0, "severity": 4, "category": "energy", "date": "2026-10-30"}
+    ],
+    "sanctions": [],
+    "maritime": {"country_code": "SA", "port_congestion": "elevated", "disruptions": [
+      {"id": "sa-m1", "title": "Tanker insurance premiums rise for Gulf loadings", "chokepoint": "strait_of_hormuz", "severity": 3, "date": "2026-10-31"}
+    ]}
+  },
+  "IR": {
+    "risk": {"country_code": "IR", "cii_score": 72, "band": "high", "trend_24h": "up"},
+    "conflicts": [
+      {"id": "ir-1", "title": "Naval exercise announced near the Strait of Hormuz", "fatalities": 0, "severity": 4, "category": "supply_route", "date": "2026-10-31"}
+    ],
+    "sanctions": [
+      {"id": "ir-s1", "title": "New designations target oil shipping intermediaries", "entity_type": "vessel", "severity": 3, "date": "2026-10-28"}
+    ],
+    "maritime": {"country_code": "IR", "port_congestion": "normal", "disruptions": []}
+  },
+  "YE": {
+    "risk": {"country_code": "YE", "cii_score": 81, "band": "severe", "trend_24h": "flat"},
+    "conflicts": [
+      {"id": "ye-1", "title": "Commercial vessel targeted in southern Red Sea", "fatalities": 0, "severity": 4, "category": "supply_route", "date": "2026-10-29"}
+    ],
+    "sanctions": [],
+    "maritime": {"country_code": "YE", "port_congestion": "severe", "disruptions": [
+      {"id": "ye-m1", "title": "Container lines extend Cape of Good Hope rerouting", "chokepoint": "red_sea", "severity": 4, "date": "2026-10-30"}
+    ]}
+  },
+  "UA": {
+    "risk": {"country_code": "UA", "cii_score": 77, "band": "severe", "trend_24h": "flat"},
+    "conflicts": [
+      {"id": "ua-1", "title": "European allies announce new air-defence procurement package", "fatalities": 0, "severity": 3, "category": "policy", "date": "2026-10-30"}
+    ],
+    "sanctions": [],
+    "maritime": {"country_code": "UA", "port_congestion": "elevated", "disruptions": []}
+  },
+  "TW": {
+    "risk": {"country_code": "TW", "cii_score": 44, "band": "elevated", "trend_24h": "up"},
+    "conflicts": [
+      {"id": "tw-1", "title": "Large-scale military drills reported around the Taiwan Strait", "fatalities": 0, "severity": 4, "category": "conflict", "date": "2026-10-31"}
+    ],
+    "sanctions": [],
+    "maritime": {"country_code": "TW", "port_congestion": "normal", "disruptions": [
+      {"id": "tw-m1", "title": "Shipping advisories issued for parts of the Taiwan Strait", "chokepoint": "taiwan_strait", "severity": 3, "date": "2026-10-31"}
+    ]}
+  },
+  "CN": {
+    "risk": {"country_code": "CN", "cii_score": 39, "band": "moderate", "trend_24h": "flat"},
+    "conflicts": [],
+    "sanctions": [
+      {"id": "cn-s1", "title": "Expanded export controls on advanced chip equipment", "entity_type": "sector", "severity": 4, "date": "2026-10-27"}
+    ],
+    "maritime": {"country_code": "CN", "port_congestion": "normal", "disruptions": []}
+  },
+  "RU": {
+    "risk": {"country_code": "RU", "cii_score": 69, "band": "high", "trend_24h": "flat"},
+    "conflicts": [],
+    "sanctions": [
+      {"id": "ru-s1", "title": "Central-bank reserve restrictions extended", "entity_type": "state", "severity": 3, "date": "2026-10-26"}
+    ],
+    "maritime": {"country_code": "RU", "port_congestion": "normal", "disruptions": []}
+  }
+}

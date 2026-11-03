@@ -1,0 +1,10 @@
+{
+  "generated_for": "demo",
+  "hotspots": [
+    {"name": "Red Sea shipping", "level": "severe"},
+    {"name": "Strait of Hormuz", "level": "elevated"},
+    {"name": "Taiwan Strait", "level": "elevated"},
+    {"name": "Eastern Europe", "level": "high"}
+  ],
+  "summary": "Demo brief: elevated maritime risk in Gulf and Red Sea routes; military activity around the Taiwan Strait; Eastern Europe remains a high-risk theatre."
+}

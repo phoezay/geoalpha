@@ -1,0 +1,19 @@
+{
+  "XOM": {"countries": [{"iso2": "US", "weight": 0.45, "reason": "Domestic upstream and refining"}, {"iso2": "SA", "weight": 0.15, "reason": "Gulf crude benchmark and partner exposure"}, {"iso2": "IR", "weight": 0.1, "reason": "Hormuz transit risk for Gulf supply"}, {"iso2": "YE", "weight": 0.1, "reason": "Red Sea tanker routing"}],
+          "commodities": ["crude_oil", "lng", "refined_products"], "chokepoints": ["strait_of_hormuz", "red_sea"], "themes": ["oil supply risk premium", "shipping costs"],
+          "impact": {"conflict": "positive", "supply_route": "positive", "energy": "positive", "sanctions": "positive", "instability": "mixed", "policy": "mixed"}},
+  "CVX": {"countries": [{"iso2": "US", "weight": 0.5, "reason": "Domestic production"}, {"iso2": "SA", "weight": 0.1, "reason": "Gulf benchmark"}, {"iso2": "IR", "weight": 0.1, "reason": "Hormuz transit"}],
+          "commodities": ["crude_oil", "lng"], "chokepoints": ["strait_of_hormuz"], "themes": ["oil supply risk premium"],
+          "impact": {"conflict": "positive", "supply_route": "positive", "energy": "positive", "sanctions": "positive", "instability": "mixed"}},
+  "LMT": {"countries": [{"iso2": "US", "weight": 0.7, "reason": "US defence budget"}, {"iso2": "UA", "weight": 0.1, "reason": "European air-defence demand"}, {"iso2": "TW", "weight": 0.1, "reason": "Indo-Pacific deterrence orders"}],
+          "commodities": [], "chokepoints": [], "themes": ["defence spending"],
+          "impact": {"conflict": "positive", "policy": "positive", "instability": "positive", "supply_route": "mixed"}},
+  "TSM": {"countries": [{"iso2": "TW", "weight": 0.6, "reason": "Most leading-edge fabs"}, {"iso2": "CN", "weight": 0.15, "reason": "Customers and export controls"}, {"iso2": "US", "weight": 0.15, "reason": "Arizona fabs and key customers"}],
+          "commodities": ["semiconductors"], "chokepoints": ["taiwan_strait"], "themes": ["cross-strait risk", "export controls"],
+          "impact": {"conflict": "negative", "supply_route": "negative", "sanctions": "negative", "instability": "negative", "policy": "mixed"}},
+  "GLD": {"countries": [{"iso2": "US", "weight": 0.4, "reason": "Dollar and real rates"}, {"iso2": "RU", "weight": 0.2, "reason": "Reserve diversification demand"}, {"iso2": "CN", "weight": 0.2, "reason": "Central-bank buying"}],
+          "commodities": ["gold"], "chokepoints": [], "themes": ["safe-haven demand"],
+          "impact": {"conflict": "positive", "sanctions": "positive", "instability": "positive", "supply_route": "positive", "policy": "mixed"}},
+  "KO":  {"countries": [{"iso2": "US", "weight": 0.35, "reason": "Largest single market"}], "commodities": ["sugar", "aluminium"], "chokepoints": [], "themes": ["consumer staples"],
+          "impact": {}}
+}
