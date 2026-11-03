@@ -1,0 +1,3 @@
+https://github.com/koala73/worldmonitor
+https://github.com/shiyu-coder/Kronos
+https://github.com/tauricresearch/tradingagents

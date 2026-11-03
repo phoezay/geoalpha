@@ -1,0 +1,20 @@
+# Secrets / local agent state
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Model weights / caches
+*.safetensors
+.cache/
